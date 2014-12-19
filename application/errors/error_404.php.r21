@@ -1,0 +1,47 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>404 页面未找到</title>
+<style type="text/css">
+
+body {
+background-color:	#fff;
+margin:				40px;
+font-family:		Lucida Grande, Verdana, Sans-serif;
+font-size:			12px;
+color:				#000;
+}
+
+#content  {
+border:				#999 1px solid;
+background-color:	#fff;
+padding:			20px 20px 12px 20px;
+}
+
+h1 {
+font-weight:		normal;
+font-size:			14px;
+color:				#990000;
+margin:				0 0 4px 0;
+}
+</style>
+</head>
+<body>
+	<div id="content">
+		<h1>404 页面未找到！</h1>
+		将在 <span id="time_count_down">3</span> 秒后跳转回首页！
+	</div>
+<script type="text/javascript">
+function countDown(secs,surl){
+	document.getElementById("time_count_down").innerHTML = secs;
+	if(--secs>0){
+		setTimeout("countDown("+secs+",'"+surl+"')",1000);
+	}   
+	else{
+		location.href=surl;
+	}
+}
+countDown(3,'http:\/\/<?php echo (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost'); ?>\/hx_wsm\/');
+</script>
+</body>
+</html>

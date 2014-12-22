@@ -125,7 +125,7 @@ class Deposit_trade extends CI_Controller
 								'Date',
 								'Comment',
 								'Amount',
-								'upload.time');
+								'Upload.Time');
 		
 		$data['data_key'] = array(
 								'account',
@@ -222,6 +222,10 @@ class Deposit_trade extends CI_Controller
                 /**从第A列开始输出*/ 
                 for($currentColumn= 'A';$currentColumn<= $allColumn; $currentColumn++){ 
                     $val = $currentSheet->getCellByColumnAndRow(ord($currentColumn) - 65,$currentRow)->getValue();/**ord()将字符转为十进制数*/ 
+                    if(!array_key_exists($currentColumn,$this->deposit_trade_key))
+                    {
+                        continue;
+                    }
                     if($currentColumn=='A' && !$val)
                     {
                         break;

@@ -20,6 +20,7 @@ class Excel_model extends CI_Model
 	function __construct()
 	{
 		parent::__construct();
+        $this->load->helper(array('common'));
 		
 	}
     
@@ -58,7 +59,9 @@ class Excel_model extends CI_Model
 	                         $value = "\t";
 	                    } else {
 	                         $value = str_replace('"', '""', $value);
-	                         $value = iconv('UTF-8', 'GB2312//IGNORE', $value);
+	                        # $value = iconv('UTF-8', 'GB2312//IGNORE', $value);
+                            #因考虑到简繁体文字，故使用下面的方法来转换
+                            $value = transcoding($value);
 	                         $value = '"' . $value . '"' . "\t";
 	                    }
 	                    $line .= $value;

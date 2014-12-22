@@ -51,7 +51,7 @@ class Trade_model extends CI_Model
                 }
                 $i++;
             }
-            $sql = "insert ignore into trade {$key} values {$value}";
+            $sql = "insert into trade {$key} values {$value}";
             $this->db->query($sql);
         }
         
@@ -85,7 +85,6 @@ class Trade_model extends CI_Model
 	 */
 	function get_list($wherearr = '', $order = '', $num = '', $offset = '',$group_by='',$select='')
 	{
-		
 		if(!empty($wherearr))
 			$this->db->where($wherearr);
 
@@ -104,6 +103,49 @@ class Trade_model extends CI_Model
              #var_dump($this->db->last_query());exit;
         }
 	}
+    
+    /*
+     *获取小计和总计
+     **/
+     function get_sum($wherearr = '', $num = '', $offset = '',$group_by='',$select='')
+     {
+        if(!empty($wherearr))
+			$this->db->where($wherearr);
+
+        empty($select) ? '':$this->db->select($select);
+		empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
+		empty($group_by) ? '' : $this->db->group_by($group_by);
+        $this->db->from(TABLE_TRADE);
+        
+     }
+     
+     /*
+      *小计
+      **/
+      function get_subtotal($wherearr = '', $num = '', $offset = '',$group_by='',$select='')
+      {
+            if(!empty($wherearr))
+                $this->db->where($wherearr);
+
+            empty($select) ? '':$this->db->select($select);
+            empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
+            empty($group_by) ? '' : $this->db->group_by($group_by);
+            $this->db->from(TABLE_TRADE);
+            if(is_numeric($num) && is_numeric($offset)){
+                $this->db->limit($num, $offset);
+                $query = $this->db->get();
+                return $query->result();
+                #var_dump($this->db->last_query());exit;
+            }
+      }
+      
+      /*
+       *总计
+       **/
+       function get_total($wherearr = '', $num = '', $offset = '',$group_by='',$select='')
+       {
+            
+       }
     
     
 	

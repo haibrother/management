@@ -165,7 +165,8 @@ $config['CLOSED_TRADE_FIELD_DISPLAY'] = array(
 						'swap' => 'Swap',
 						'profit' => 'Profit',
 						'pips' => 'Pips',
-						'comment' => 'Comment');
+						'comment' => 'Comment',
+						'ctime' => 'Upload.Time');
                         
 $config['BOUNTY_TRADE_FIELD_DISPLAY'] = array(
             'login' => 'Login',
@@ -195,7 +196,8 @@ $config['OPEN_TRADE_FIELD_DISPLAY'] = array(
 						'swap' => 'Swap',
 						'profit' => 'Profit',
 						'pips' => 'Pips',
-						'comment' => 'Comment');
+						'comment' => 'Comment',
+						'ctime' => 'Upload.Time');
 
 $config['DEPOSIT_TRADE_FIELD_DISPLAY'] = array(
                         'account'=>'Account',
@@ -205,7 +207,8 @@ $config['DEPOSIT_TRADE_FIELD_DISPLAY'] = array(
 						'name' => 'Name',
 						'open_time' => 'Date',
 						'comment' => 'Comment',
-						'profit' => 'Amount');
+						'profit' => 'Amount',
+						'ctime' => 'Upload.Time');
 
 
 //操作记录表显示名称数组

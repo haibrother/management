@@ -36,44 +36,44 @@ class Excel_model extends CI_Model
      */
     function array_to_excel($headerarr, $array, $filename='exceloutput')
 	{
-	     $headers = ''; // just creating the var for field headers to append to below
+	    $headers = ''; // just creating the var for field headers to append to below
 	     $data = ''; // just creating the var for field data to append to below
-	     
+
 	     if (preg_match('/MSIE/',$_SERVER['HTTP_USER_AGENT'])) $filename = rawurlencode($filename);
-	     
+
 	     if (count($array) == 0) {
 	          echo '<p>The table appears to have no data.</p>';
 	     } else {
-	     	
+
 	     	if(!empty($headerarr)){
 	     		foreach($headerarr as $value)
-     				$headers .= iconv('UTF-8', 'GB2312//IGNORE', $value) . "\t";
+     				//$headers .= iconv('UTF-8', 'GBK//IGNORE', $value) . "\t";
+     				$headers .= $value . ",";
 	     	}
-	     	
-	          foreach ($array as $key => $row) {
-						
+
+	          foreach ($array as $row) {
+
 	               $line = '';
-	               foreach($row as $key2 => $value) {
-	                    
-						if ((!isset($value)) OR ($value == "")) {
-	                         $value = "\t";
+	               foreach($row as $value) {
+
+						if ((!isset($value)) OR ($value == "" AND $value!=0)) {
+	                         $value = "-,";
 	                    } else {
 	                         $value = str_replace('"', '""', $value);
-	                        # $value = iconv('UTF-8', 'GB2312//IGNORE', $value);
-                            #因考虑到简繁体文字，故使用下面的方法来转换
-                            $value = transcoding($value);
-	                         $value = '"' . $value . '"' . "\t";
+	                         //$value = iconv('UTF-8', 'GBK//IGNORE', $value);
+	                         $value = $value;
+	                         $value = '"' . $value . '"' . ",";
 	                    }
 	                    $line .= $value;
 	               }
 	               $data .= trim($line)."\n";
 	          }
-	          
+
 	          $data = str_replace("\r","",$data);
-	          
-	          header("Content-type: application/x-msdownload, charset=GB2312");
-	          header("Content-Disposition: attachment; filename=$filename.xls");
-	          echo "$headers\n$data";  
+ 			  header("Pragma: public");
+	          header("Content-type: application/x-msdownload, charset=GBK");
+	          header("Content-Disposition: attachment; filename=$filename.csv");
+	          echo "$headers\n$data";
 	     }
 	}
 	

@@ -475,7 +475,7 @@ form .wysiwyg {
                 }
             
 form .small-input {
-                width: 10% !important;
+                width: 5% !important;
                 }
             
 form .small-input-mutli {
@@ -747,7 +747,7 @@ color: red;font-size: 18px;font-weight: bold;
 .pay_method_info{font-size: 0.9em;}
 
 form .search_select{width:15% !important;}
-.search_button{width: 70px;}
+.search_button{width: 80px;}
 .server_id_dateinfo{height: 60px;display: block;overflow: hidden;}
 
 .order-pay-status, .order-examine-status{font-weight:bold;}

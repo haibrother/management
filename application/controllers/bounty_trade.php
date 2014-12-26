@@ -41,6 +41,7 @@ class Bounty_trade extends CI_Controller
             $this->session->unset_userdata('search_submit');
             $this->session->unset_userdata('search_login');
             $this->session->unset_userdata('search_month');
+            $this->session->unset_userdata('search_version');
         }
         
         $trade_search_where = array('trade_type'=>'closed');
@@ -49,20 +50,23 @@ class Bounty_trade extends CI_Controller
         if(!empty($_POST['submit'])){
             $trade_search_data['search_submit'] = trim($this->input->post('submit'));
             $trade_search_data['search_login'] = trim($this->input->post('search_login'));
+            $trade_search_data['search_version'] = trim($this->input->post('search_version'));
             $trade_search_data['search_month'] = trim($this->input->post('search_month'));
             if(!$trade_search_data['search_month'])$trade_search_data['search_month']=date('Y-m');
-            
-            
-            
+
             if($trade_search_data['search_login'])
             {
                 $trade_search_where['login'] = $trade_search_data['search_login'];
             }
             
+             if($trade_search_data['search_version'])
+            {
+                $trade_search_where['version'] = $trade_search_data['search_version'];
+            }
+            
             if($trade_search_data['search_month'])
             {
-                $trade_search_where['open_time>='] = $trade_search_data['search_month']."-01 00:00:00";
-                $trade_search_where['open_time<='] = $trade_search_data['search_month']."-31 23:59:59";
+                $trade_search_where['version_month'] = $trade_search_data['search_month'];
             }
             
         }elseif($this->session->userdata('search_submit') != false){
@@ -71,24 +75,40 @@ class Bounty_trade extends CI_Controller
                 $trade_search_where['login'] = $this->session->userdata('search_login');
             }
 
+            if($this->session->userdata('search_version'))
+            {
+                $trade_search_where['version'] = $this->session->userdata('search_version');
+                $trade_search_data['search_version'] = $this->session->userdata('search_version');
+                
+            }
+
             if($this->session->userdata('search_month'))
             {
-                $trade_search_where['open_time>='] = $this->session->userdata('search_month')."-01 00:00:00";
-                $trade_search_where['open_time<='] = $this->session->userdata('search_month')."-31 23:59:59";
+                $trade_search_where['version_month'] = $this->session->userdata('search_month');
+                $trade_search_data['search_month'] = $this->session->userdata('search_month');
             }
         }
         
-        if(!$this->session->userdata('search_month'))
+        if(!isset($trade_search_where['version_month']))
         {
-            $trade_search_where['open_time>='] = date('Y-m')."-01 00:00:00";
-            $trade_search_where['open_time<='] = date('Y-m')."-31 23:59:59";
+            $trade_search_where['version_month'] = date('Y-m');
             $trade_search_data['search_month'] = date('Y-m');
         }
-
+        
+        //获取当前栏目的所有版本和默认版本
+        $data['version'] = $this->trade_model->get_all_version(array('trade_type'=>'closed','version_month'=>$trade_search_data['search_month']));
+        
+        if(!isset($trade_search_where['version']) && isset($data['version']['last_version']) && $data['version']['last_version'])
+        {
+            $trade_search_where['version'] = $data['version']['last_version'];
+            $trade_search_data['search_version'] = $data['version']['last_version'];
+        }
+        
         if(isset($trade_search_data) && $trade_search_data)
         {
             $this->session->set_userdata($trade_search_data);
         }
+        
         $page_per_max = isset($_GET['page_per_max']) && is_numeric($_GET['page_per_max']) ?  $_GET['page_per_max']:PAGE_PER_MAX;
         //获取总数
         
@@ -143,12 +163,6 @@ class Bounty_trade extends CI_Controller
         $data['page_per_max'] = $page_per_max;
         $data['data_search'] = true;
 		$data['data_search_url'] = 'bounty_trade/trade_list/';
-		#$data['edit_able'] = $this->permission_model->check_sql_permission(TABLE_USERS, SQL_ACTION_UPDATE, $this->session->userdata('user_group'));
-		#$data['data_edit_url'] = 'user/edit/';
-		
-	#	$data['delete_able'] = $this->permission_model->check_sql_permission(TABLE_USERS, SQL_ACTION_DELETE, $this->session->userdata('user_group'));
-		#$data['data_delete_url'] = 'user/delete_user_single/';
-		
 		$this->load->view('index', $data);
 		
 	}

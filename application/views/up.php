@@ -31,7 +31,11 @@
 					<form  enctype="multipart/form-data"  action="#" onsubmit="return formCreate()" method="post">
 						<fieldset>
 							<!-- Set class to "column-left" or "column-right" on fieldsets to divide the form into columns -->
-
+                            <p>
+                               
+                                 <span for="create">年月<span class="input_need">*</span></span><input type="text" maxlength="30" name="version_month" readonly="true" onclick="WdatePicker({dateFmt:'yyyy-MM'});" id="version_month" class="text-input small-input"<?php if(isset($version_month) && $version_month){ ?> value="<?php echo $version_month; ?>""<?php } ?> />
+                                
+                            </p>
 							<?php foreach($data_create as $key => $value): ?>
 							<?php if ($value['element'] == 'select'): ?>
 							<p>
@@ -94,20 +98,46 @@
 
     <?php if (isset($data_create)): ?>
     function formCreate(){
+            //
+            version_month=$("input[name='version_month']").val();
+            if(!version_month)
+            {
+                jQuery.facebox('<div id="massages"></div>');
+                jQuery("#massages").append('<h3>请选择年月</h3>');
+                return false;
+            }
+            
+            if($("input[type=file]").val()==''){   
+                jQuery.facebox('<div id="massages"></div>');
+                jQuery("#massages").append('<h3>请选择上传的文件</h3>');
+				return false;
+			}
+            
+            var str=$("input[type=file]").val();
+			var len=str.lastIndexOf(".");
+			var type=str.substring(len+1,str.length);
+            type = type.toLowerCase();
+			if(type!="csv"){
+                jQuery.facebox('<div id="massages"></div>');
+                jQuery("#massages").append('<h3>只能上传 csv格式 文件</h3>');
+				return false;
+			}
+            
+            
             $(".button").hide();
             $("#loading").show();
             $.ajaxFileUpload ({
-                 url:'<?php echo $data_create_url; ?>',
+                 url:'<?php echo $data_create_url; ?>'+version_month,
                  type:'post',
                  secureuri:false,  
                  fileElementId:'create',
                  dataType: 'text',
                  async: false,
-                 success:function(up_count,status){
+                 success:function(msg){
                     $(".button").show();
                     $("#loading").hide();
                     jQuery.facebox('<div id="massages"></div>');
-                    jQuery("#massages").append('<h3>报表上传成功');
+                    jQuery("#massages").append('<h3>'+msg+'</h3>');
                  }
             });
                 

@@ -75,3 +75,6 @@ define('SQL_ACTION_INSERT', 'INSERT');
 define('SQL_ACTION_UPDATE', 'UPDATE');
 define('SQL_ACTION_DELETE', 'DELETE');
 
+//最大上传条数
+define('MAX_UPLOAD',5000);
+

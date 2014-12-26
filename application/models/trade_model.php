@@ -22,7 +22,7 @@ class Trade_model extends CI_Model
 	 * @param mixed $user_data
 	 * @return
 	 */
-	public function create($data = array()){
+	public function create($data = array(),$trade_type=''){
 	   //权限检查
         if(!$data)return '';
         
@@ -34,10 +34,11 @@ class Trade_model extends CI_Model
         {
             return '';
         }
-        $arr = $this->filtration_data($arr);
+        //需求不允许过滤数据
+      //  $arr = $this->filtration_data($arr,$trade_type);
         foreach($arr as $k=>$v)
         {
-            if(isset($value))$value='';
+            $value='';
             $i = 0;
             foreach($v as $k1=>$v1)
             {
@@ -60,7 +61,7 @@ class Trade_model extends CI_Model
     /*
      *过滤掉重复数据 deal为唯一
      **/
-     function filtration_data($arr)
+     function filtration_data($arr,$trade_type)
      {
         $dealArr = array();
         foreach($arr as $k1=>$v1)
@@ -73,12 +74,58 @@ class Trade_model extends CI_Model
         
         if(!empty($dealArr))
         {
+            $this->db->where('trade_type',$trade_type);
             $this->db->where_in('deal',$dealArr);
             $this->db->delete(TABLE_TRADE); 
         }    
         
         return $arr;
      }
+     
+     /*
+      *获取最大版本
+      **/
+      function get_version($wherearr = '')
+      {
+        $this->db->select('version');
+        $this->db->from(TABLE_TRADE);
+        $this->db->where($wherearr);
+        $this->db->order_by('`version`','desc');
+        $this->db->limit(1);
+        $query = $this->db->get();
+        $result = $query->result();
+        if(!empty($result))return $result[0]->version+1;
+        return 1;
+      }
+      
+      /*
+       *获取所有版本
+       **/
+       function get_all_version($wherearr)
+       {
+            $this->db->select('version');
+            $this->db->from(TABLE_TRADE);
+            $this->db->where($wherearr);
+            $this->db->order_by('`version`','desc');
+            $this->db->group_by('`version`');
+            $query = $this->db->get();
+            $result = $query->result();
+
+            $return = array('version'=>'','last_version'=>'');
+            if(!empty($result))
+            {
+                foreach($result as $k1=>$v1)
+                {
+                    foreach($v1 as $k2=>$v2)
+                    {
+                        $return['version'][] = $v2;
+                    }
+                }
+                $return['last_version'] = $result[0]->version;
+            }
+            
+            return $return;
+       }
 	
 	
 	/**
@@ -131,12 +178,10 @@ class Trade_model extends CI_Model
             empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
             empty($group_by) ? '' : $this->db->group_by($group_by);
             $this->db->from(TABLE_TRADE);
-            if(is_numeric($num) && is_numeric($offset)){
-                $this->db->limit($num, $offset);
-                $query = $this->db->get();
-                return $query->result();
-                #var_dump($this->db->last_query());exit;
-            }
+            $this->db->limit($num, $offset);
+            $query = $this->db->get();
+            return $query->result();
+            #var_dump($this->db->last_query());exit;
       }
       
       /*
@@ -164,7 +209,15 @@ class Trade_model extends CI_Model
         return 0;
 
      }
-	
+     
+     /*
+      *删除版本数据
+      **/
+      function delete_version($where)
+      {
+        $this->db->where($where);
+        $this->db->delete(TABLE_TRADE);
+      }
 	
 	
 	/**

@@ -6,25 +6,25 @@
 class Closed_trade extends CI_Controller
 {
     public $closed_trade_key = array(
-        'A'=>'deal',
-        'B'=>'login',
-        'C'=>'name',
-        'D'=>'open_time',
-        'E'=>'type',
-        'F'=>'symbol',
-        'G'=>'volume',
-        'H'=>'open_price',
-        'I'=>'close_time',
-        'J'=>'close_price',
-        'K'=>'commission',
-        'L'=>'taxes',
-        'M'=>'agent',
-        'N'=>'swap',
-        'O'=>'profit',
-        'P'=>'pips',
-        'Q'=>'comment',
-
+        'deal',
+        'login',
+        'name',
+        'open_time',
+        'type',
+        'symbol',
+        'volume',
+        'open_price',
+        'close_time',
+        'close_price',
+        'commission',
+        'taxes',
+        'agent',
+        'swap',
+        'profit',
+        'pips',
+        'comment'
     );
+    
 
 	/**
 	 * User::__construct()
@@ -61,27 +61,33 @@ class Closed_trade extends CI_Controller
             $this->session->unset_userdata('search_submit');
             $this->session->unset_userdata('search_login');
             $this->session->unset_userdata('search_month');
+            $this->session->unset_userdata('search_version');
         }
         
         $trade_search_where = array('trade_type'=>'closed');
         $data['search_where'] = true;
         
+        
         if(!empty($_POST['submit'])){
             $trade_search_data['search_submit'] = trim($this->input->post('submit'));
             $trade_search_data['search_login'] = trim($this->input->post('search_login'));
+            $trade_search_data['search_version'] = trim($this->input->post('search_version'));
             $trade_search_data['search_month'] = trim($this->input->post('search_month'));
-            
-            $this->session->set_userdata($trade_search_data);
+            if(!$trade_search_data['search_month'])$trade_search_data['search_month']=date('Y-m');
             
             if($trade_search_data['search_login'])
             {
                 $trade_search_where['login'] = $trade_search_data['search_login'];
             }
             
+            if($trade_search_data['search_version'])
+            {
+                $trade_search_where['version'] = $trade_search_data['search_version'];
+            }
+            
             if($trade_search_data['search_month'])
             {
-                $trade_search_where['close_time>='] = $trade_search_data['search_month']."-01 00:00:00";
-                $trade_search_where['close_time<='] = $trade_search_data['search_month']."-31 23:59:59";
+                $trade_search_where['version_month'] = $trade_search_data['search_month'];
             }
             
         }elseif($this->session->userdata('search_submit') != false){
@@ -89,13 +95,41 @@ class Closed_trade extends CI_Controller
             {
                 $trade_search_where['login'] = $this->session->userdata('search_login');
             }
+            
+            if($this->session->userdata('search_version'))
+            {
+                $trade_search_where['version'] = $this->session->userdata('search_version');
+                $trade_search_data['search_version'] = $this->session->userdata('search_version');
+                
+            }
 
             if($this->session->userdata('search_month'))
             {
-                $trade_search_where['close_time>='] = $this->session->userdata('search_month')."-01 00:00:00";
-                $trade_search_where['close_time<='] = $this->session->userdata('search_month')."-31 23:59:59";
+                $trade_search_where['version_month'] = $this->session->userdata('search_month');
+                $trade_search_data['search_month'] = $this->session->userdata('search_month');
             }
             
+        }
+        
+        
+        if(!isset($trade_search_where['version_month']))
+        {
+            $trade_search_where['version_month'] = date('Y-m');
+            $trade_search_data['search_month'] = date('Y-m');
+        }
+        
+        //获取当前栏目的所有版本和默认版本
+        $data['version'] = $this->trade_model->get_all_version(array('trade_type'=>'closed','version_month'=>$trade_search_data['search_month']));
+        
+        if(!isset($trade_search_where['version']) && isset($data['version']['last_version']) && $data['version']['last_version'])
+        {
+            $trade_search_where['version'] = $data['version']['last_version'];
+            $trade_search_data['search_version'] = $data['version']['last_version'];
+        }
+        
+        if(isset($trade_search_data) && $trade_search_data)
+        {
+            $this->session->set_userdata($trade_search_data);
         }
         
         $page_per_max = isset($_GET['page_per_max']) && is_numeric($_GET['page_per_max']) ?  $_GET['page_per_max']:PAGE_PER_MAX;
@@ -183,11 +217,7 @@ class Closed_trade extends CI_Controller
         $data['page_per_max'] = $page_per_max;
         $data['data_search'] = true;
 		$data['data_search_url'] = 'closed_trade/trade_list/';
-		#$data['edit_able'] = $this->permission_model->check_sql_permission(TABLE_USERS, SQL_ACTION_UPDATE, $this->session->userdata('user_group'));
-		#$data['data_edit_url'] = 'user/edit/';
-		
-	#	$data['delete_able'] = $this->permission_model->check_sql_permission(TABLE_USERS, SQL_ACTION_DELETE, $this->session->userdata('user_group'));
-		#$data['data_delete_url'] = 'user/delete_user_single/';
+		$data['delete_version_url'] = 'closed_trade/delete/';
 		
 		$this->load->view('index', $data);
 		
@@ -198,7 +228,7 @@ class Closed_trade extends CI_Controller
 	 * 
 	 * @return
 	 */
-	public function create(){
+	public function create($param=''){
         $data = array();
         $data['data_create'] = array(
 								'create' => array(
@@ -215,73 +245,110 @@ class Closed_trade extends CI_Controller
         $data['top_item'] = 'report_up';
         $data['item'] = 'closed_trade_create';
         $data['data_create_url'] = 'closed_trade/create/';
-       # var_dump($_FILES['create']);
+        $data['version_month'] = date('Y-m');
         if(isset($_FILES['create']) && $_FILES['create'])
         {
-            $this->upload();
+            $this->upload($param);
         }
-        
+
        $this->load->view('up',$data);
 	}
     
     /*
      *上传文件且入库
      **/
-     public function upload()
+     public function upload($version_month)
      {
-        $return = array('status'=>0,'msg'=>'');
-        
-        $file = (object)$_FILES['create'];
-        $filePath = $file->tmp_name;
-        require_once(APPPATH.'libraries/phpexcel-1.8.0/PHPExcel.php');
-        $PHPReader = new PHPExcel_Reader_Excel2007(); 
-        if(!$PHPReader->canRead($filePath)){ 
-            $PHPReader = new PHPExcel_Reader_Excel5(); 
-            if(!$PHPReader->canRead($filePath)){ 
-                $return['status'] = 1;
-                $return ['msg'] = 'no Excel';
-            }
+        $return = array('status'=>0,'msg'=>'上传成功');
+        $trade_type = 'closed';
+        //只有管理员或者超级管理员才有权限上传数据
+        if($this->session->userdata('user_group') != ADMIN && $this->session->userdata('user_group') != POWER_ADMIN)
+        {
+            $return = array('status'=>1,'msg'=>'您没有权限操作上传报表');
         }
-        $arr = array();
+        
+        if($return['status']===0 && !$version_month)
+        {
+            $return =  array('status'=>2,'msg'=>'请选择正确的年月');
+        }
+        
         if($return['status']===0)
         {
-            $PHPExcel = $PHPReader->load($filePath); 
-            /**读取excel文件中的第一个工作表*/ 
-            $currentSheet = $PHPExcel->getSheet(0); 
-            /**取得最大的列号*/ 
-            $allColumn = $currentSheet->getHighestColumn(); 
-            /**取得一共有多少行*/ 
-            $allRow = $currentSheet->getHighestRow();
-            /**从第二行开始输出，因为excel表中第一行为列名*/ 
-            for($currentRow = 3;$currentRow < $allRow;$currentRow++){
-                $sheet = array();
-                /**从第A列开始输出*/ 
-                for($currentColumn= 'A';$currentColumn<= $allColumn; $currentColumn++){ 
-                    $val = $currentSheet->getCellByColumnAndRow(ord($currentColumn) - 65,$currentRow)->getValue();/**ord()将字符转为十进制数*/ 
-                    if(!array_key_exists($currentColumn,$this->closed_trade_key))
+            //每月最多只能上传 5个版本，若超过了，就需要删除其他，再上传
+            $get_all_version = $this->trade_model->get_all_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));
+            if(isset($get_all_version['version']) && count($get_all_version['version'])>=5)
+            {
+                $return =  array('status'=>3,'msg'=>'每次最多只能上传5个版本，请删除其他版本，再次上传');
+            }
+        }
+        if($return['status']===0)
+        {
+            //获取当前最大版本号
+            $version = $this->trade_model->get_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));      
+            $file = (object)$_FILES['create'];
+            $filePath = $file->tmp_name;
+            $column = 17; //csv列数
+            $row = 0;
+            $handle = fopen($filePath, "r");
+            $arr = array();
+            while (($data = fgetcsv($handle)) !== false){
+                for ($c = 0; $c < $column; $c++) {
+                    $data[$c] = isset($data[$c])?$data[$c]:'';
+                    $tempData = trim($data[$c]);
+                    if(preg_match('#\d+E\+\d+#is',$tempData)){
+                        $tempData = number_format($tempData);
+                        $tempData = str_replace(',', '', $tempData);
+                    }
+                    
+                    if(!array_key_exists($c,$this->closed_trade_key))
                     {
                         continue;
                     }
-                    if($currentColumn=='A' && !$val)
+                    if(($c==0 && !$tempData) || ($c==1 && !$tempData) || ($c==0 && $tempData=='Deal'))
                     {
+                        unset($arr[$row]);
                         break;
-                    }elseif($currentColumn=='Q')
+                    }elseif($c==16)
                     {
-                        $val = addslashes($val);
+                        $tempData = addslashes($tempData);
                     }
                     
-                    $sheet[$this->closed_trade_key[$currentColumn]] = $val;
+                    $arr[$row][$this->closed_trade_key[$c]] = $tempData;
+                    
                 }
-                if($sheet)
+
+                if(isset($arr[$row]) && $arr[$row])
                 {
-                    $sheet['trade_type'] = 'closed';
-                    $sheet['broker_fee'] = '24';
-                    $arr[] = $sheet;
+                    $arr[$row]['trade_type'] = $trade_type;
+                    $arr[$row]['broker_fee'] = '24';
+                    $arr[$row]['version']    = $version;
+                    $arr[$row]['version_month'] = $version_month;
+                    $arr[$row]['operator']   = $this->session->userdata('user_login');
+                }
+                
+                
+                $row++;
+                
+                /*分批处理数据
+                *分为3种情况
+                *1、总行数小于最大允许上传行数
+                *2、总数等于最大允许上传行数
+                *3、总行数等于当前行数，且循环总数不等于最大上传数
+                **/
+                if(count($arr)==MAX_UPLOAD)
+                {
+                    $this->trade_model->create($arr);
+                    $arr = array();
                 }
             }
-            
-            $this->trade_model->create($arr);
+            fclose($handle);
+            if(!empty($arr))
+            {
+                $this->trade_model->create($arr);
+            }
         }
+        
+        echo $return['msg'];exit;
      }
 	
 	/**
@@ -290,15 +357,22 @@ class Closed_trade extends CI_Controller
 	 * @param mixed $user_id
 	 * @return
 	 */
-	public function delete_user_single($user_id){
+	public function delete($search_month='',$search_version=''){
+        if($this->session->userdata('user_group') != ADMIN && $this->session->userdata('user_group') != POWER_ADMIN)
+        {
+            return ;
+        }
         
-		if(!$this->permission_model->check_sql_permission(TABLE_USERS, SQL_ACTION_DELETE, $this->session->userdata('user_group')) || !is_numeric($user_id)){
-			echo 'false';
-		}else{
-			$user_data = array('user_id' => $user_id);
-			$result = $this->user_model->delete_user($user_data);
-			echo $result;
-		}
+        if(!$search_month || !$search_version)
+        {
+            return ;
+        }
+        
+        $where = array('trade_type'=>'closed','version_month'=>$search_month,'version'=>$search_version);
+        $this->trade_model->delete_version($where);
+        
+        //跳转到列表页
+        header("Location:/closed_trade?clear=1");
 	}
 
 	
@@ -325,7 +399,6 @@ class Closed_trade extends CI_Controller
 			if(!empty($excel_where))
 				$this->db->where($excel_where);
 		}
-		
 		$this->db->order_by("`order`", "desc");
 		
 		$query = $this->db->get(TABLE_TRADE, $limit, $now_page);

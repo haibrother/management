@@ -28,7 +28,7 @@
 					<div class="notification attention png_bg"> <a href="#" class="close"><img src="resources/images/icons/cross_grey_small.png" title="Close this notification" alt="close" /></a>
 						<div> 注意：有 <span class="input_need">*</span> 标志项为必填项！ </div>
 					</div>
-					<form  enctype="multipart/form-data"  action="#" onsubmit="return formCreate()" method="post">
+					<form  enctype="multipart/form-data"  action="http://lh.management/open_trade/create/2014-12" method="post">
 						<fieldset>
 							<!-- Set class to "column-left" or "column-right" on fieldsets to divide the form into columns -->
                             <p>

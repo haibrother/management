@@ -169,7 +169,7 @@ class Closed_trade extends CI_Controller
 								'Order',
 								'Ref.Deal',
 								'Ref.Login',
-								'Name',
+								//'Name',
 								'Open Time',
 								'Type',
 								'Symbol',
@@ -191,7 +191,7 @@ class Closed_trade extends CI_Controller
 								'order',
 								'deal',
 								'login',
-								'name',
+								//'name',
 								'open_time',
 								'type',
 								'symbol',
@@ -283,17 +283,26 @@ class Closed_trade extends CI_Controller
         }
         if($return['status']===0)
         {
+            //每月最多只能上传 5个版本，若超过了，就需要删除其他，再上传
+            $get_all_version = $this->trade_model->get_all_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));
+            if(isset($get_all_version['version']) && count($get_all_version['version'])>=5)
+            {
+                $return =  array('status'=>3,'msg'=>'每次最多只能上传5个版本，请删除其他版本，再次上传');
+            }
+        }
+        if($return['status']===0)
+        {
             //获取当前最大版本号
             $version = $this->trade_model->get_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));      
             $file = (object)$_FILES['create'];
             $filePath = $file->tmp_name;
             //文件 必须为UTF-8
-            exec("iconv -f gbk -t utf8 {$filePath}  -o {$filePath}");
+            //exec("iconv -f gbk -t utf8 {$filePath}  -o {$filePath}");
             $column = 17; //csv列数
             $row = 0;
             $handle = fopen($filePath, "r");
             $arr = array();
-            while (($data = fgetcsv($handle)) !== false){
+            while (($data = fgetcsv($handle,10000,',')) !== false){
                 for ($c = 0; $c < $column; $c++) {
                     $data[$c] = isset($data[$c])?$data[$c]:'';
                     $tempData = trim($data[$c]);
@@ -313,6 +322,9 @@ class Closed_trade extends CI_Controller
                     }elseif($c==16)
                     {
                         $tempData = addslashes($tempData);
+                    }elseif($c==2)
+                    {
+                        $tempData = '';
                     }
                     
                     $arr[$row][$this->closed_trade_key[$c]] = $tempData;

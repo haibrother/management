@@ -6,27 +6,26 @@
 class Open_trade extends CI_Controller
 {
     public $open_trade_key = array(
-        'A'=>'deal',
-        'B'=>'login',
-        'C'=>'name',
-        'D'=>'open_time',
-        'E'=>'balance',
-        'F'=>'equity',
-        'G'=>'margin',
-        'H'=>'free_Margin',
-        'I'=>'type',
-        'J'=>'symbol',
-        'K'=>'lots',
-        'L'=>'open_price',
-        'M'=>'market_price',
-        'N'=>'commission',
-        'O'=>'taxes',
-        'P'=>'agent',
-        'Q'=>'swap',
-        'R'=>'profit',
-        'S'=>'pips',
-        'T'=>'comment',
-
+        'deal',
+        'login',
+        'name',
+        'open_time',
+        'balance',
+        'equity',
+        'margin',
+        'free_Margin',
+        'type',
+        'symbol',
+        'lots',
+        'open_price',
+        'market_price',
+        'commission',
+        'taxes',
+        'agent',
+        'swap',
+        'profit',
+        'pips',
+        'comment',
     );
 
 	/**
@@ -169,7 +168,7 @@ class Open_trade extends CI_Controller
 								'Order',
 								'Ref.Deal',
 								'Ref.Login',
-								'Name',
+							//	'Name',
 								'Open Time',
 								'Balance',
 								'Equity',
@@ -194,7 +193,7 @@ class Open_trade extends CI_Controller
 								'order',
 								'deal',
 								'login',
-								'name',
+							//	'name',
 								'open_time',
 								'balance',
 								'equity',
@@ -292,74 +291,72 @@ class Open_trade extends CI_Controller
         if($return['status']===0)
         {
             //获取当前最大版本号
-            $version = $this->trade_model->get_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));
+            $version = $this->trade_model->get_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));      
             $file = (object)$_FILES['create'];
             $filePath = $file->tmp_name;
-            require_once(APPPATH.'libraries/phpexcel-1.8.0/PHPExcel.php');
-            $PHPReader = new PHPExcel_Reader_Excel2007(); 
-            if(!$PHPReader->canRead($filePath)){ 
-                $PHPReader = new PHPExcel_Reader_Excel5(); 
-                if(!$PHPReader->canRead($filePath)){ 
-                    $return['status'] = 1;
-                    $return ['msg'] = 'no Excel';
-                }
-            }
-        }
-        
-        if($return['status']===0)
-        {
+            //文件 必须为UTF-8
+            //exec("iconv -f gbk -t utf8 {$filePath}  -o {$filePath}");
+            $column = 6; //csv列数
+            $row = 0;
+            $handle = fopen($filePath, "r");
             $arr = array();
-            $PHPExcel = $PHPReader->load($filePath); 
-            /**读取excel文件中的第一个工作表*/ 
-            $currentSheet = $PHPExcel->getSheet(0); 
-            /**取得最大的列号*/ 
-            $allColumn = $currentSheet->getHighestColumn(); 
-            /**取得一共有多少行*/ 
-            $allRow = $currentSheet->getHighestRow();
-            /**从第二行开始输出，因为excel表中第一行为列名*/ 
-            for($currentRow = 3;$currentRow < $allRow;$currentRow++){
-                $sheet = array();
-                /**从第A列开始输出*/ 
-                for($currentColumn= 'A';$currentColumn<= $allColumn; $currentColumn++){ 
-                    $val = $currentSheet->getCellByColumnAndRow(ord($currentColumn) - 65,$currentRow)->getValue();/**ord()将字符转为十进制数*/ 
-                    if(!array_key_exists($currentColumn,$this->open_trade_key))
+            while (($data = fgetcsv($handle,10000,',')) !== false){
+                for ($c = 0; $c < $column; $c++) {
+                    $data[$c] = isset($data[$c])?$data[$c]:'';
+                    $tempData = trim($data[$c]);
+                    if(preg_match('#\d+E\+\d+#is',$tempData)){
+                        $tempData = number_format($tempData);
+                        $tempData = str_replace(',', '', $tempData);
+                    }
+                    
+                    if(!array_key_exists($c,$this->open_trade_key))
                     {
                         continue;
                     }
-                    if($currentColumn=='A' && !$val)
+                    if(($c==0 && !$tempData) || ($c==1 && !$tempData) || ($c==0 && $tempData=='Deal'))
                     {
+                        var_dump($arr[$row]);
+                        echo "<br>";
+                        if(isset($arr[$row]))unset($arr[$row]);
                         break;
-                    }elseif($currentColumn=='Q')
+                    }elseif($c==19)
                     {
-                        $val = addslashes($val);
+                        $tempData = addslashes($tempData);
+                    }elseif($c==2)
+                    {
+                        $tempData = '';
                     }
                     
-                    $sheet[$this->open_trade_key[$currentColumn]] = $val;
+                    $arr[$row][$this->open_trade_key[$c]] = $tempData;
+                    
                 }
-                if($sheet)
+
+                if(isset($arr[$row]) && $arr[$row])
                 {
-                    $sheet['trade_type'] = $trade_type;
-                    $sheet['version']    = $version;
-                    $sheet['version_month'] = $version_month;
-                    $sheet['operator']   = $this->session->userdata('user_login');
-                    $arr[] = $sheet;
+                    $arr[$row]['trade_type'] = $trade_type;
+                    $arr[$row]['version']    = $version;
+                    $arr[$row]['version_month'] = $version_month;
+                    $arr[$row]['operator']   = $this->session->userdata('user_login');
                 }
                 
+                
+                $row++;
+                
                 /*分批处理数据
-                *分为3种情况
-                *1、总行数小于最大允许上传行数
-                *2、总数等于最大允许上传行数
-                *3、总行数等于当前行数，且循环总数不等于最大上传数
+                *总数等于最大允许上传行数 ,否则在下面的循环体外 入库
                 **/
-                if(($allRow-3<=MAX_UPLOAD &&  $allRow-3==count($arr)) || count($arr)==MAX_UPLOAD || ($allRow-3==$currentRow && count($arr)!=MAX_UPLOAD))
+                if(count($arr)==MAX_UPLOAD)
                 {
                     $this->trade_model->create($arr);
                     $arr = array();
                 }
-                
+            }
+            fclose($handle);
+            if(!empty($arr))
+            {
+                $this->trade_model->create($arr);
             }
         }
-        
         echo $return['msg'];exit;
      }
 	

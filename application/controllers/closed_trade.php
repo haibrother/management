@@ -287,6 +287,8 @@ class Closed_trade extends CI_Controller
             $version = $this->trade_model->get_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));      
             $file = (object)$_FILES['create'];
             $filePath = $file->tmp_name;
+            //文件 必须为UTF-8
+            exec("iconv -f gbk -t utf8 {$filePath}  -o {$filePath}");
             $column = 17; //csv列数
             $row = 0;
             $handle = fopen($filePath, "r");
@@ -330,10 +332,7 @@ class Closed_trade extends CI_Controller
                 $row++;
                 
                 /*分批处理数据
-                *分为3种情况
-                *1、总行数小于最大允许上传行数
-                *2、总数等于最大允许上传行数
-                *3、总行数等于当前行数，且循环总数不等于最大上传数
+                *总数等于最大允许上传行数 ,否则在下面的循环体外 入库
                 **/
                 if(count($arr)==MAX_UPLOAD)
                 {

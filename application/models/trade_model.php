@@ -130,11 +130,20 @@ class Trade_model extends CI_Model
 	
 	/**
 	 */
-	function get_list($wherearr = '', $order = '', $num = '', $offset = '',$group_by='',$select='')
+	function get_list($wherearr = '', $order = '', $num = '', $offset = '',$group_by='',$select='',$where_in='')
 	{
+        if(isset($wherearr['type']) && $wherearr['type'])
+        {
+            $this->db->where_in('`type`',$wherearr['type']);
+            unset($wherearr['type']);
+        }
+        
 		if(!empty($wherearr))
-			$this->db->where($wherearr);
-
+        {
+            $this->db->where($wherearr);
+        }
+            
+            
         empty($select) ? '':$this->db->select($select);
 		empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
 		empty($group_by) ? '' : $this->db->group_by($group_by);
@@ -143,7 +152,7 @@ class Trade_model extends CI_Model
         if(is_numeric($num) && is_numeric($offset)){
             $this->db->limit($num, $offset);
     		$query = $this->db->get();
-    		return $query->result();
+    		 return $query->result();
             #var_dump($this->db->last_query());exit;
         } else {
     		 return $this->db->count_all_results();

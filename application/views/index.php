@@ -45,14 +45,14 @@
                         -->
                         login:<input type="text" maxlength="30" name="search_login" id="search_login" class="text-input small-input"<?php if ($this->session->userdata('search_login') != false){ ?> value="<?php echo $this->session->userdata('search_login'); ?>""<?php } ?> />
                         month:<input type="text" maxlength="30" name="search_month" readonly="true" onclick="WdatePicker({dateFmt:'yyyy-MM'});" id="search_month" class="text-input small-input"<?php if ($this->session->userdata('search_month') != false){ ?> value="<?php echo $this->session->userdata('search_month'); ?>""<?php } ?> />
-                    	version:<select name='search_version' <?php if(in_array($item,array('closed_trade','open_trade','deposit_trade')) &&$this->session->userdata('user_group') != ADMIN && $this->session->userdata('user_group') != POWER_ADMIN){?> disabled='disabled'<?php } ?> >
+                    	version:<select name='search_version' <?php if(in_array($item,array('closed_trade','open_trade','deposit_trade','bounty_trade')) &&$this->session->userdata('user_group') != ADMIN && $this->session->userdata('user_group') != POWER_ADMIN){?> disabled='disabled'<?php } ?> >
                             <?php if(isset($version['version']) && $version['version']){ foreach($version['version'] as $v){ ?>
                             <option <?php if ($this->session->userdata('search_version') != false && $this->session->userdata('search_version')==$v){ ?> selected='selected' <?php } ?> value='<?php echo $v; ?>'>第<?php echo $v; ?>版本</option>
                             
                             <?php }} ?>
                         </select>
                         <input type="submit" name="submit" value="搜索" class="button search_button" />
-                        <?php if($this->session->userdata('user_group') == ADMIN || $this->session->userdata('user_group') == POWER_ADMIN){?>
+                        <?php if(in_array($item,array('closed_trade','open_trade','deposit_trade')) && ($this->session->userdata('user_group') == ADMIN || $this->session->userdata('user_group') == POWER_ADMIN)){?>
                         <input type="button" name="delete_version" value="删除当前版本" class="button search_button" />
                         <?php } ?>
 	                    <div id="search_data_info">
@@ -285,7 +285,7 @@ function select_page(type,num){
 
 function delete_version(search_month,search_version)
 {
-    location.href = '<?php if(isset($delete_version_url)){echo $delete_version_url;}?>'+search_month+'/'+search_version;
+    location.href = '<?php echo $this->config->item('base_url'); ?><?php if(isset($delete_version_url)){echo $delete_version_url;}?>'+search_month+'/'+search_version;
 }
     
 $(function(){

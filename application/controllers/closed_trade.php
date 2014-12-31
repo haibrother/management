@@ -36,6 +36,8 @@ class Closed_trade extends CI_Controller
 		parent::__construct();
 		$this->load->model('trade_model');
 		$this->load->library('pagination');
+        if(!$this->permission_model->check_visit_permission(TABLE_TRADE, $this->session->userdata('user_group')))
+            show_404();
 	}
 
 

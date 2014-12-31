@@ -38,6 +38,8 @@ class Open_trade extends CI_Controller
 		parent::__construct();
 		$this->load->model('trade_model');
 		$this->load->library('pagination');
+        if(!$this->permission_model->check_visit_permission(TABLE_TRADE, $this->session->userdata('user_group')))
+            show_404();
 	}
 
 
@@ -296,7 +298,7 @@ class Open_trade extends CI_Controller
             $filePath = $file->tmp_name;
             //文件 必须为UTF-8
             //exec("iconv -f gbk -t utf8 {$filePath}  -o {$filePath}");
-            $column = 6; //csv列数
+            $column = 20; //csv列数
             $row = 0;
             $handle = fopen($filePath, "r");
             $arr = array();
@@ -315,8 +317,6 @@ class Open_trade extends CI_Controller
                     }
                     if(($c==0 && !$tempData) || ($c==1 && !$tempData) || ($c==0 && $tempData=='Deal'))
                     {
-                        var_dump($arr[$row]);
-                        echo "<br>";
                         if(isset($arr[$row]))unset($arr[$row]);
                         break;
                     }elseif($c==19)
@@ -405,6 +405,13 @@ class Open_trade extends CI_Controller
 		
 		if($condition != false){
 			$excel_where = $this->session->userdata('excel_where');
+            
+            if(isset($excel_where['type']) && $excel_where['type'])
+            {
+                $this->db->where_in('`type`',$excel_where['type']);
+                unset($excel_where['type']);
+            }
+            
 			if(!empty($excel_where))
 				$this->db->where($excel_where);
 		}

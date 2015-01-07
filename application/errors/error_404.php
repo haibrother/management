@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="zh-CN">
 <head>
-<title>对盘管理系统</title>
+<title>Najmat管理系统</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
@@ -65,7 +65,7 @@ DD_belatedPNG.fix('.png_bg, img, li');
 
 	<div id="login-wrapper" class="png_bg">
 		<div id="login-top">
-			<h1>对盘管理系统</h1>
+			<h1>Najmat管理系统</h1>
 		</div>
 	<div id="error-content" >
 		<h3>您的会话超时或网页地址错误!</h3>

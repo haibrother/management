@@ -2,7 +2,7 @@
 
 /**
  */
-class trade_model extends CI_Model
+class Trade_delete_model extends CI_Model
 {
 
 	/**
@@ -16,71 +16,7 @@ class trade_model extends CI_Model
 		
 	}
 	
-	/**
-	 * User_model::create()
-	 * 
-	 * @param mixed $user_data
-	 * @return
-	 */
-	public function create($data = array(),$trade_type=''){
-	   //权限检查
-        if(!$data)return '';
-        
-        $count = count($data);
-        $n = 1000;
-        //切割成多个数组
-        $arr = array_chunk($data,$n);
-        if(!is_array($arr) || !$arr)
-        {
-            return '';
-        }
-        //需求不允许过滤数据
-      //  $arr = $this->filtration_data($arr,$trade_type);
-        foreach($arr as $k=>$v)
-        {
-            $value='';
-            $i = 0;
-            foreach($v as $k1=>$v1)
-            {
-                if(empty($v))return '';
-                $key = "(`".implode("`,`",array_keys($v1))."`)";
-                if($i==0)
-                {
-                    $value .= "('".implode("','",array_values($v1))."')";
-                }else{
-                    $value .= ",('".implode("','",array_values($v1))."')";
-                }
-                $i++;
-            }
-            $sql = "insert into trade {$key} values {$value}";
-            $this->db->query($sql);
-        }
-        
-	}
-    
-    /*
-     *过滤掉重复数据 deal为唯一
-     **/
-     function filtration_data($arr,$trade_type)
-     {
-        $dealArr = array();
-        foreach($arr as $k1=>$v1)
-        {
-            foreach($v1 as $k2=>$v2)
-            {
-                $dealArr[] = $v2['deal'];
-            }
-        }
-        
-        if(!empty($dealArr))
-        {
-            $this->db->where('trade_type',$trade_type);
-            $this->db->where_in('deal',$dealArr);
-            $this->db->delete(TABLE_TRADE); 
-        }    
-        
-        return $arr;
-     }
+	
      
      /*
       *获取最大版本
@@ -88,7 +24,7 @@ class trade_model extends CI_Model
       function get_version($wherearr = '')
       {
         $this->db->select('version');
-        $this->db->from(TABLE_TRADE);
+        $this->db->from(TABLE_TRADE_DELETE);
         $this->db->where($wherearr);
         $this->db->order_by('`version`','desc');
         $this->db->limit(1);
@@ -104,7 +40,7 @@ class trade_model extends CI_Model
        function get_all_version($wherearr)
        {
             $this->db->select('version');
-            $this->db->from(TABLE_TRADE);
+            $this->db->from(TABLE_TRADE_DELETE);
             $this->db->where($wherearr);
             $this->db->order_by('`version`','desc');
             $this->db->group_by('`version`');
@@ -147,7 +83,7 @@ class trade_model extends CI_Model
         empty($select) ? '':$this->db->select($select);
 		empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
 		empty($group_by) ? '' : $this->db->group_by($group_by);
-        $this->db->from(TABLE_TRADE);
+        $this->db->from(TABLE_TRADE_DELETE);
         
         if(is_numeric($num) && is_numeric($offset)){
             $this->db->limit($num, $offset);
@@ -171,7 +107,7 @@ class trade_model extends CI_Model
         empty($select) ? '':$this->db->select($select);
 		empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
 		empty($group_by) ? '' : $this->db->group_by($group_by);
-        $this->db->from(TABLE_TRADE);
+        $this->db->from(TABLE_TRADE_DELETE);
         
      }
      
@@ -186,7 +122,7 @@ class trade_model extends CI_Model
             empty($select) ? '':$this->db->select($select);
             empty($order) ? $this->db->order_by("`order`", "desc") : $this->db->order_by($order);
             empty($group_by) ? '' : $this->db->group_by($group_by);
-            $this->db->from(TABLE_TRADE);
+            $this->db->from(TABLE_TRADE_DELETE);
             $this->db->limit($num, $offset);
             $query = $this->db->get();
             return $query->result();
@@ -211,33 +147,14 @@ class trade_model extends CI_Model
         if(!empty($wherearr))
 			$this->db->where($wherearr);
          empty($select) ? '':$this->db->select($select);
-        $this->db->from(TABLE_TRADE);
+        $this->db->from(TABLE_TRADE_DELETE);
         $query = $this->db->get();
         $result =  $query->result();
         if(isset($result[0]->num) && $result[0]->num)return $result[0]->num;
         return 0;
 
      }
-     
-     /*
-      *删除版本数据
-      **/
-      function delete_version($where,$operator)
-      {
-            //先入库 日志
-            $sql = "insert into ".TABLE_TRADE_DELETE." (`order`,`account`,`deal`,`trade_type`,`login`,`name`,`open_time`,`balance`,`broker_fee`,
-            `equity`,`margin`,`free_Margin`,`type`,`symbol`,`lots`,`volume`,`close_time`,`close_price`,`open_price`,`market_price`,`commission`,
-            `taxes`,`agent`,`swap`,`profit`,`pips`,`comment`,`new_comment`,`version`,`version_month`,`operator`,`ctime`,`mtime`)  select 
-            `order`,`account`,`deal`,`trade_type`,`login`,`name`,`open_time`,`balance`,`broker_fee`,`equity`,`margin`,`free_Margin`,`type`,
-            `symbol`,`lots`,`volume`,`close_time`,`close_price`,`open_price`,`market_price`,`commission`,`taxes`,`agent`,`swap`,`profit`,`pips`,
-            `comment`,`new_comment`,`version`,`version_month`,'{$operator}',`ctime`,now() from ".TABLE_TRADE." where {$where}";
-            $this->db->query($sql);
-            $sql = "delete from ".TABLE_TRADE." where {$where}";
-            $this->db->query($sql);
-           
-            
-      }
-	
+
 	
 	/**
 	 * User_model::update_user()

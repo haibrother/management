@@ -46,6 +46,11 @@ $config['PERMISSION_SQL_ARRAY'] = array(
                         TABLE_TRADE . SQL_ACTION_UPDATE => array(ADMIN, POWER_ADMIN),
                         TABLE_TRADE . SQL_ACTION_DELETE => array(POWER_ADMIN),
                         
+                        TABLE_TRADE_DELETE . SQL_ACTION_SELECT => array(USER, ADMIN, POWER_ADMIN),
+                        TABLE_TRADE_DELETE . SQL_ACTION_INSERT => array(ADMIN, POWER_ADMIN),
+                        TABLE_TRADE_DELETE . SQL_ACTION_UPDATE => array(ADMIN, POWER_ADMIN),
+                        TABLE_TRADE_DELETE . SQL_ACTION_DELETE => array(POWER_ADMIN),
+                        
                         TABLE_ACCOUNTS . SQL_ACTION_SELECT => array(USER, ADMIN, POWER_ADMIN),
                         TABLE_ACCOUNTS . SQL_ACTION_INSERT => array(ADMIN, POWER_ADMIN),
                         TABLE_ACCOUNTS . SQL_ACTION_UPDATE => array(ADMIN, POWER_ADMIN),
@@ -208,7 +213,8 @@ $config['DEPOSIT_TRADE_FIELD_DISPLAY'] = array(
 						'open_time' => 'Date',
 						'comment' => 'Comment',
 						'profit' => 'Amount',
-						'ctime' => 'Upload.Time');
+						'ctime' => 'Upload.Time',
+                        'new_comment' => 'New comment');
 
 
 //操作记录表显示名称数组

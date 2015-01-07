@@ -96,19 +96,69 @@ CREATE TABLE IF NOT EXISTS `trade` (
   `swap` double NOT NULL DEFAULT '0',
   `profit` double NOT NULL DEFAULT '0',
   `pips` double NOT NULL DEFAULT '0',
-  `comment` varchar(32) NOT NULL DEFAULT '0',
+  `comment` varchar(32) DEFAULT NULL,
+  `new_comment` varchar(32) DEFAULT NULL,
   `version` tinyint(3) NOT NULL DEFAULT '1' COMMENT '版本号',
   `version_month` varchar(7) DEFAULT NULL COMMENT '版本年月',
   `operator` varchar(20) DEFAULT NULL,
   `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`order`),
   KEY `Index 2` (`login`),
-  KEY `version_month` (`version_month`)
+  KEY `version_month` (`version_month`),
+  KEY `trade_type` (`trade_type`),
+  KEY `type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- 正在导出表  management.trade 的数据：~0 rows (大约)
-/*!40000 ALTER TABLE `trade` DISABLE KEYS */;
-/*!40000 ALTER TABLE `trade` ENABLE KEYS */;
+-- 数据导出被取消选择。
+
+
+-- 导出  表 management.trade_delete 结构
+DROP TABLE IF EXISTS `trade_delete`;
+CREATE TABLE IF NOT EXISTS `trade_delete` (
+  `order` int(9) unsigned zerofill NOT NULL AUTO_INCREMENT,
+  `account` varchar(10) DEFAULT 'A01',
+  `deal` varchar(10) DEFAULT NULL,
+  `trade_type` enum('open','closed','deposit') DEFAULT NULL,
+  `login` varchar(10) DEFAULT NULL,
+  `name` varchar(20) DEFAULT NULL,
+  `open_time` datetime DEFAULT '1970-01-01 00:00:00',
+  `balance` double NOT NULL DEFAULT '0',
+  `broker_fee` double NOT NULL DEFAULT '24',
+  `equity` double NOT NULL DEFAULT '0',
+  `margin` double NOT NULL DEFAULT '0',
+  `free_Margin` double NOT NULL DEFAULT '0',
+  `type` varchar(16) DEFAULT NULL,
+  `symbol` varchar(16) DEFAULT NULL,
+  `lots` varchar(16) DEFAULT NULL,
+  `volume` float(10,2) unsigned NOT NULL DEFAULT '0.00',
+  `close_time` datetime DEFAULT '1970-01-01 00:00:00',
+  `close_price` double NOT NULL DEFAULT '0',
+  `open_price` double NOT NULL DEFAULT '0',
+  `market_price` double NOT NULL DEFAULT '0',
+  `commission` double NOT NULL DEFAULT '0',
+  `taxes` double NOT NULL DEFAULT '0',
+  `agent` double NOT NULL DEFAULT '0',
+  `swap` double NOT NULL DEFAULT '0',
+  `profit` double NOT NULL DEFAULT '0',
+  `pips` double NOT NULL DEFAULT '0',
+  `comment` varchar(32) DEFAULT NULL,
+  `new_comment` varchar(32) DEFAULT NULL,
+  `version` tinyint(3) NOT NULL DEFAULT '1' COMMENT '版本号',
+  `version_month` varchar(7) DEFAULT NULL COMMENT '版本年月',
+  `operator` varchar(20) DEFAULT NULL,
+  `ctime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `mtime` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`order`),
+  KEY `Index 2` (`login`),
+  KEY `version_month` (`version_month`),
+  KEY `trade_type` (`trade_type`),
+  KEY `type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- 数据导出被取消选择。
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IF(@OLD_FOREIGN_KEY_CHECKS IS NULL, 1, @OLD_FOREIGN_KEY_CHECKS) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 
 
 -- 导出  表 management.users 结构

@@ -4,7 +4,7 @@
 
 	<div id="login-wrapper" class="png_bg">
 		<div id="login-top">
-			<h1>对盘管理系统</h1>
+			<h1>Najmat管理系统</h1>
 		</div>
 		
 		<div id="login-content">

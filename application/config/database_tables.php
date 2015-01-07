@@ -21,6 +21,7 @@ define('TABLE_USERS', DB_PREFIX . 'users');
 define('TABLE_CLOSED_TRADE', DB_PREFIX . 'closed_trade');
 define('TABLE_OPEN_TRADE', DB_PREFIX . 'open_trade');
 define('TABLE_TRADE', DB_PREFIX . 'trade');
+define('TABLE_TRADE_DELETE', DB_PREFIX . 'trade_delete');
 define('TABLE_ACCOUNTS', DB_PREFIX . 'accounts');
 define('TABLE_DIDCURLS', DB_PREFIX . 'didcurls');
 define('TABLE_DNLCURLS', DB_PREFIX . 'dnlcurls');

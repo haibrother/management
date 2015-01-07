@@ -9,7 +9,7 @@
 		<div class="clear"></div>
 		<!-- End .clear -->
 
-		<div class="content-box" <?php if(isset($item) &&  in_array($item,array('closed_trade','open_trade'))) { echo "style='width:1700px'";} ?>   ><!-- Start Content Box -->
+		<div class="content-box" <?php if(isset($item) &&  in_array($item,array('closed_trade','open_trade','closed_trade_delete','open_trade_delete','deposit_trade_delete'))) { echo "style='width:1800px'";} ?>   ><!-- Start Content Box -->
 
 			<div class="content-box-header">
 				<h3>数据列表</h3>

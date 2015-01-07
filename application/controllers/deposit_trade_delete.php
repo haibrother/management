@@ -3,17 +3,8 @@
 /**
  * 平仓交易编码表
  */
-class Deposit_trade extends CI_Controller
+class Deposit_trade_delete extends CI_Controller
 {
-    public $deposit_trade_key = array(
-        'deal',
-        'login',
-        'name',
-        'open_time',
-        'comment',
-        'profit',
-        'new_comment'
-    );
 
 	/**
 	 * User::__construct()
@@ -23,9 +14,9 @@ class Deposit_trade extends CI_Controller
 	function __construct()
 	{
 		parent::__construct();
-		$this->load->model('trade_model');
+		$this->load->model('trade_delete_model');
 		$this->load->library('pagination');
-        if(!$this->permission_model->check_visit_permission(TABLE_TRADE, $this->session->userdata('user_group')))
+        if(!$this->permission_model->check_visit_permission(TABLE_TRADE_DELETE, $this->session->userdata('user_group')))
             show_404();
 	}
 
@@ -107,7 +98,7 @@ class Deposit_trade extends CI_Controller
         }
         
         //获取当前栏目的所有版本和默认版本
-        $data['version'] = $this->trade_model->get_all_version(array('trade_type'=>'deposit','version_month'=>$trade_search_data['search_month']));
+        $data['version'] = $this->trade_delete_model->get_all_version(array('trade_type'=>'deposit','version_month'=>$trade_search_data['search_month']));
         
         if(!isset($trade_search_where['version']) && isset($data['version']['last_version']) && $data['version']['last_version'])
         {
@@ -125,7 +116,7 @@ class Deposit_trade extends CI_Controller
 		$config['base_url'] = 'deposit_trade/trade_list/';
 		$config['per_page'] = $page_per_max;
 		$config['uri_segment'] = 3;
-		$data['page_total'] = $config['total_rows'] = $this->trade_model->get_list($trade_search_where);
+		$data['page_total'] = $config['total_rows'] = $this->trade_delete_model->get_list($trade_search_where);
 		$config['cur_tag_open'] = '<a class="current">';
 		$config['cur_tag_close'] = '</a>';
 		$config['first_link'] = '&laquo;';
@@ -141,7 +132,7 @@ class Deposit_trade extends CI_Controller
 		$this->session->set_userdata('excel_where', $trade_search_where);
 		
 		//获取列表
-		$result = $this->trade_model->get_list($trade_search_where, '', $page_per_max, intval($this->uri->segment(3)));
+		$result = $this->trade_delete_model->get_list($trade_search_where, '', $page_per_max, intval($this->uri->segment(3)));
         $data['result'] = new stdClass();
 		foreach ($result as $key => $value){
 			foreach($value as $key2 => $value2){
@@ -161,7 +152,9 @@ class Deposit_trade extends CI_Controller
 								'Comment',
 								'Amount',
 								'Upload.Time',
-                                'New comment');
+                                'New comment',
+                                'Delete.Operator',
+                                'Delete.Time');
 		
 		$data['data_key'] = array(
 								'account',
@@ -173,177 +166,24 @@ class Deposit_trade extends CI_Controller
 								'comment',
 								'profit',
                                 'ctime',
-                                'new_comment');
+                                'new_comment',
+                                'operator',
+                                'mtime');
 		
-		$data['top_item'] = 'report_list';
-		$data['item'] = 'deposit_trade';
+		$data['top_item'] = 'report_list_delete';
+		$data['item'] = 'deposit_trade_delete';
 		$data['item_id_field'] = 'user_id';
-        $data['excel_export'] = 'deposit_trade';
+        $data['excel_export'] = 'deposit_trade_delete';
         //多类型行显示
         $data['dedicacated'] = 1; //标识特殊的分页
         $data['page_per_max'] = $page_per_max;
         $data['data_search'] = true;
-		$data['data_search_url'] = 'deposit_trade/trade_list/';
-		$data['delete_version_url'] = 'deposit_trade/delete/';
+		$data['data_search_url'] = 'deposit_trade_delete/trade_list/';
 		
 		$this->load->view('index', $data);
 		
 	}
-	
-	/**
-	 * User::create()
-	 * 
-	 * @return
-	 */
-	public function create($param=''){
-        $data = array();
-        $data['data_create'] = array(
-								'create' => array(
-									'element'=> 'input',
-									'type' => 'file',
-									'name' => '上传',
-									'value' => '',
-									'maxlength' => '100',
-									'need' => true,
-									'checkrepeat' => true),
-									
-								
-								);
-        $data['top_item'] = 'report_up';
-        $data['item'] = 'deposit_trade_create';
-        $data['data_create_url'] = 'deposit_trade/create/';
-        $data['version_month'] = date('Y-m');
-        if(isset($_FILES['create']) && $_FILES['create'])
-        {
-            $this->upload($param);
-        }
-        
-       $this->load->view('up',$data);
-	}
-    
-    /*
-     *上传文件且入库
-     **/
-     public function upload($version_month)
-     {
-        $return = array('status'=>0,'msg'=>'上传成功');
-        $trade_type = 'deposit';
-        //只有管理员或者超级管理员才有权限上传数据
-        if($this->session->userdata('user_group') != ADMIN && $this->session->userdata('user_group') != POWER_ADMIN)
-        {
-            $return = array('status'=>1,'msg'=>'您没有权限操作上传报表');
-        }
-        
-        if($return['status']===0 && !$version_month)
-        {
-            $return =  array('status'=>2,'msg'=>'请选择正确的年月');
-        }
-        
-        if($return['status']===0)
-        {
-            //每月最多只能上传 5个版本，若超过了，就需要删除其他，再上传
-            $get_all_version = $this->trade_model->get_all_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));
-            if(isset($get_all_version['version']) && count($get_all_version['version'])>=5)
-            {
-                $return =  array('status'=>3,'msg'=>'每次最多只能上传5个版本，请删除其他版本，再次上传');
-            }
-        }
-        
-        if($return['status']===0)
-        {
-            //获取当前最大版本号
-            $version = $this->trade_model->get_version(array('trade_type'=>$trade_type,'version_month'=>$version_month));      
-            $file = (object)$_FILES['create'];
-            $filePath = $file->tmp_name;
-            //文件 必须为UTF-8
-            //exec("iconv -f gbk -t utf8 {$filePath}  -o {$filePath}");
-            $column = 7; //csv列数
-            $row = 0;
-            $handle = fopen($filePath, "r");
-            $arr = array();
-            while (($data = fgetcsv($handle,10000,',')) !== false){
-                for ($c = 0; $c < $column; $c++) {
-                    $data[$c] = isset($data[$c])?$data[$c]:'';
-                    $tempData = trim($data[$c]);
-                    if(preg_match('#\d+E\+\d+#is',$tempData)){
-                        $tempData = number_format($tempData);
-                        $tempData = str_replace(',', '', $tempData);
-                    }
-                    
-                    if(!array_key_exists($c,$this->deposit_trade_key))
-                    {
-                        continue;
-                    }
-                    if(($c==0 && !$tempData) || ($c==1 && !$tempData) || ($c==0 && $tempData=='Deal'))
-                    {
-                        unset($arr[$row]);
-                        break;
-                    }elseif($c==4)
-                    {
-                        $tempData = addslashes($tempData);
-                    }elseif($c==2)
-                    {
-                        $tempData = '';
-                    }
-                    
-                    $arr[$row][$this->deposit_trade_key[$c]] = $tempData;
-                    
-                }
-
-                if(isset($arr[$row]) && $arr[$row])
-                {
-                    $arr[$row]['trade_type'] = $trade_type;
-                    $arr[$row]['version']    = $version;
-                    $arr[$row]['version_month'] = $version_month;
-                    $arr[$row]['operator']   = $this->session->userdata('user_login');
-                }
-                
-                
-                $row++;
-                
-                /*分批处理数据
-                *总数等于最大允许上传行数 ,否则在下面的循环体外 入库
-                **/
-                if(count($arr)==MAX_UPLOAD)
-                {
-                    $this->trade_model->create($arr);
-                    $arr = array();
-                }
-            }
-            fclose($handle);
-            if(!empty($arr))
-            {
-                $this->trade_model->create($arr);
-            }
-        }
-        echo $return['msg'];exit;
-     }
-	
-	/**
-	 * User::delete_user_single()
-	 * 
-	 * @param mixed $user_id
-	 * @return
-	 */
-	public function delete($search_month='',$search_version=''){
-        if($this->session->userdata('user_group') != ADMIN && $this->session->userdata('user_group') != POWER_ADMIN)
-        {
-            return ;
-        }
-        
-        if(!$search_month || !$search_version)
-        {
-            return ;
-        }
-        
-        $where = "trade_type='deposit' and version_month='{$search_month}' and version='{$search_version}'";
-        $this->trade_model->delete_version($where,$this->session->userdata('user_login'));
-        
-        //跳转到列表页
-        header("Location:/deposit_trade?clear=1");
-	}
-
-	
+			
 	/**
 	 * User::excel_export()
 	 * 
@@ -370,11 +210,11 @@ class Deposit_trade extends CI_Controller
 		
 		$this->db->order_by("`order`", "desc");
 		
-		$query = $this->db->get(TABLE_TRADE, $limit, $now_page);
+		$query = $this->db->get(TABLE_TRADE_DELETE, $limit, $now_page);
 			
 		$FIELD_DISPLAY = $this->config->item('DEPOSIT_TRADE_FIELD_DISPLAY');
 		
-		$result_array = $this->trade_model->excel_sql_result_convert($query, $FIELD_DISPLAY);
+		$result_array = $this->trade_delete_model->excel_sql_result_convert($query, $FIELD_DISPLAY);
 		if(isset($result_array['resultarr']) && $result_array['resultarr'])
         {
             foreach($result_array['resultarr'] as $k1=>$v1)

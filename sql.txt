@@ -1,6 +1,0 @@
-ALTER TABLE `trade`
-	ADD COLUMN `version` TINYINT(3) NOT NULL DEFAULT '1' COMMENT '版本号' AFTER `comment`,
-	ADD COLUMN `version_month` VARCHAR(7) NULL DEFAULT NULL COMMENT '版本年月' AFTER `version`,
-	ADD COLUMN `operator` VARCHAR(20) NULL DEFAULT NULL AFTER `version_month`,
-	CHANGE COLUMN `ctime` `ctime` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `operator`,
-	ADD INDEX `version_month` (`version_month`);

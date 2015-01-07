@@ -381,9 +381,9 @@ class Closed_trade extends CI_Controller
             return ;
         }
         
-        $where = array('trade_type'=>'closed','version_month'=>$search_month,'version'=>$search_version);
-        $this->trade_model->delete_version($where);
-        
+        $where = "trade_type='closed' and version_month='{$search_month}' and version='{$search_version}'";
+        $this->trade_model->delete_version($where,$this->session->userdata('user_login'));
+
         //跳转到列表页
         header("Location:/closed_trade?clear=1");
 	}

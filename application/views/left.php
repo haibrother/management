@@ -2,7 +2,7 @@
 
 		<div id="sidebar"><div id="sidebar-wrapper"> <!-- Sidebar with logo and menu -->
 
-			<h1 id="sidebar-title"><a href="<?php echo $this->config->item('base_url'); ?>">对盘管理系统</a></h1>
+			<h1 id="sidebar-title"><a href="<?php echo $this->config->item('base_url'); ?>">Najmat管理系统</a></h1>
 
 			<!-- Sidebar Profile links -->
 			<div id="profile-links">
@@ -37,6 +37,16 @@
 						<li><a class="<?php echo (isset($item) && $item == 'bounty_trade')? 'current':''; ?>" href="bounty_trade?clear=1">佣金报表</a></li>
 					</ul>
 				</li>
+                 <?php if($this->permission_model->check_visit_permission(TABLE_USERS, $this->session->userdata('user_group')) && ($this->session->userdata('user_group') == ADMIN || $this->session->userdata('user_group') == POWER_ADMIN)): ?>
+                <li>
+					<a href="#" class="nav-top-item<?php echo (isset($top_item) && $top_item == 'report_list_delete')? ' current':''; ?>">报表删除日志</a>
+					<ul>
+						<li><a class="<?php echo (isset($item) && $item == 'closed_trade_delete')? 'current':''; ?>" href="closed_trade_delete?clear=1">平仓交易报表日志</a></li>
+						<li><a class="<?php echo (isset($item) && $item == 'open_trade_delete')? 'current':''; ?>" href="open_trade_delete?clear=1">开仓交易报表日志</a></li>
+						<li><a class="<?php echo (isset($item) && $item == 'deposit_trade_delete')? 'current':''; ?>" href="deposit_trade_delete?clear=1">存取款报表日志</a></li>
+					</ul>
+				</li>
+                <?php endif; ?>
 
 				<?php if($this->permission_model->check_visit_permission(TABLE_USERS, $this->session->userdata('user_group')) && ($this->session->userdata('user_group') == ADMIN || $this->session->userdata('user_group') == POWER_ADMIN)): ?>
 				<li>
